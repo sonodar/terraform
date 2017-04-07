@@ -122,6 +122,11 @@ func resourceAwsElasticBeanstalkEnvironment() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"platform_arn": &schema.Schema{
+				Type:          schema.TypeString,
+				Optional:      true,
+				ConflictsWith: []string{"solution_stack_name", "template_name"},
+			},
 			"wait_for_ready_timeout": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
@@ -206,6 +211,7 @@ func resourceAwsElasticBeanstalkEnvironmentCreate(d *schema.ResourceData, meta i
 	settings := d.Get("setting").(*schema.Set)
 	solutionStack := d.Get("solution_stack_name").(string)
 	templateName := d.Get("template_name").(string)
+	platformArn := d.Get("platform_arn").(string)
 
 	// TODO set tags
 	// Note: at time of writing, you cannot view or edit Tags after creation
@@ -250,6 +256,10 @@ func resourceAwsElasticBeanstalkEnvironmentCreate(d *schema.ResourceData, meta i
 
 	if templateName != "" {
 		createOpts.TemplateName = aws.String(templateName)
+	}
+
+	if platformArn != "" {
+		createOpts.PlatformArn = aws.String(platformArn)
 	}
 
 	if version != "" {
@@ -398,6 +408,13 @@ func resourceAwsElasticBeanstalkEnvironmentUpdate(d *schema.ResourceData, meta i
 		hasChange = true
 		if v, ok := d.GetOk("template_name"); ok {
 			updateOpts.TemplateName = aws.String(v.(string))
+		}
+	}
+
+	if d.HasChange("platform_arn") {
+		hasChange = true
+		if v, ok := d.GetOk("platform_arn"); ok {
+			updateOpts.PlatformArn = aws.String(v.(string))
 		}
 	}
 

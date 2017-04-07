@@ -51,6 +51,12 @@ func resourceAwsElasticBeanstalkConfigurationTemplate() *schema.Resource {
 				Optional: true,
 				ForceNew: true,
 			},
+			"platform_arn": &schema.Schema{
+				Type:          schema.TypeString,
+				Optional:      true,
+				ForceNew:      true,
+				ConflictsWith: []string{"solution_stack_name"},
+			},
 		},
 	}
 }
@@ -80,6 +86,10 @@ func resourceAwsElasticBeanstalkConfigurationTemplateCreate(d *schema.ResourceDa
 
 	if attr, ok := d.GetOk("solution_stack_name"); ok {
 		opts.SolutionStackName = aws.String(attr.(string))
+	}
+
+	if attr, ok := d.GetOk("platform_arn"); ok {
+		opts.PlatformArn = aws.String(attr.(string))
 	}
 
 	log.Printf("[DEBUG] Elastic Beanstalk configuration template create opts: %s", opts)
